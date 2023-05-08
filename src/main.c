@@ -14,9 +14,6 @@
 const int SCREEN_WIDTH = 656;
 const int SCREEN_HEIGHT = 400;
 
-SDL_Window* window1 = NULL;
-SDL_Renderer* renderer1 = NULL;
-
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 
@@ -143,25 +140,12 @@ int check_right_letter(int letter_box, int letter_nbr){
     return 0;
 }
 
-int check_level_success(){
+int check_level_success(void){
     for(int i = 0; i < 6; i++){
         if(decode[i] != 2) return 0;
     }
     return 1;
 }
-
-/*struct letter get_letter_from_box(int box_nbr){
-    struct letter perm;
-    for(int i = 0; i < 10; i++){
-        if(letters[i].position == box_nbr){
-            perm = letters[i];
-            return perm;
-        }
-    }
-    return perm;
-}
-*/
-
 
 int main(int argc, char* argv[]) {
 
@@ -180,135 +164,125 @@ int main(int argc, char* argv[]) {
     window = SDL_CreateWindow("The Big 3: Level 2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    SDL_Texture* background_texture = load_texture("C:/Users/htrik/Downloads/level2/assets/level2_background.png");
+    TTF_Font* font = TTF_OpenFont("assets/pacifico/Pacifico.ttf", 32);
+    //SDL_Color color = {0, 0, 0, 0};
 
-    SDL_Texture* cropped_letters_texture = load_and_crop_image("C:/Users/htrik/Downloads/level2/assets/level2_background.png", 0, 219, SCREEN_WIDTH, SCREEN_HEIGHT - 219);
-
-    SDL_Texture* letters_texture = load_texture("C:/Users/htrik/Downloads/level2/assets/letters.png");
-
-    SDL_Texture* empty_box_texture = load_and_crop_image("C:/Users/htrik/Downloads/level2/assets/level2_background.png", 25.14, 121.2934, 84, 84);
-
-    SDL_Texture* hint1_texture = load_texture("C:/Users/htrik/Downloads/level2/assets/caeserCipherDisk.png");
+    SDL_Texture* background_texture = load_texture("assets/level2_background.png");
+    SDL_Texture* cropped_letters_texture = load_and_crop_image("assets/level2_background.png", 0, 219, SCREEN_WIDTH, SCREEN_HEIGHT - 219);
+    SDL_Texture* letters_texture = load_texture("assets/letters.png");
+    SDL_Texture* hint1_texture = load_texture("assets/caeserCipherDisk.png");
 
 
 
-
-    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    SDL_RenderClear(renderer);
-
-    draw_texture(hint1_texture, 0, 0);
-
-
-    draw_texture(background_texture, 0, 0);
-
-    draw_white_box(cropped_letters_texture, 0, 219, SCREEN_WIDTH, SCREEN_HEIGHT - 219);
-
-
-    //draw_texture(letters_texture, 120, 219);
-
-    SDL_RenderPresent(renderer);
-
-    TTF_Font* font = TTF_OpenFont("C:/Users/htrik/Downloads/level2/assets/pacifico/Pacifico.ttf", 32);
-    SDL_Color color = {0, 0, 0, 0};
-
-    SDL_Surface* surface = TTF_RenderText_Solid(font, "-8", color);
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_Rect rect = {SCREEN_WIDTH - 80, 0, surface->w, surface->h};
-    SDL_RenderCopy(renderer, texture, NULL, &rect);
-    SDL_RenderPresent(renderer);
-
-
-
-    letters[0].x = 120;
-    letters[0].y = 219;
-    letters[0].originalX = letters[0].x;
-    letters[0].originalY = letters[0].y;
-    letters[0].letter_texture = load_and_crop_image("C:/Users/htrik/Downloads/level2/assets/letters.png", 0, 0, 84, 84);
-    letters[0].position = -1;
-    draw_texture(letters[0].letter_texture, letters[0].x, letters[0].y);
-
-    for(int i = 1; i < 5; i++){
-        letters[i].x = letters[i-1].x + 84;
-        letters[i].y = letters[i-1].y;
-        letters[i].originalX = letters[i].x;
-        letters[i].originalY = letters[i].y;
-        letters[i].letter_texture = load_and_crop_image("C:/Users/htrik/Downloads/level2/assets/letters.png", i * 84, 0, 84, 84);
-        letters[i].position = -1;
-        draw_texture(letters[i].letter_texture, letters[i].x, letters[i].y);
-    }
-
-    for(int i = 5; i < 10; i++){
-        letters[i].x = letters[i - 5].x;
-        letters[i].y = letters[i - 5].y + 84;
-        letters[i].originalX = letters[i].x;
-        letters[i].originalY = letters[i].y;
-        letters[i].letter_texture = load_and_crop_image("C:/Users/htrik/Downloads/level2/assets/letters.png", (i - 5) * 84, 84, 84, 84);
-        letters[i].position = -1;
-        draw_texture(letters[i].letter_texture, letters[i].x, letters[i].y);
-    }
-
-    SDL_RenderPresent(renderer);
-
-
+    SDL_Event event;
     int letter_box = 0;
+    double x;
+    double y;
 
     while(!check_level_success()){
-        SDL_Event event;
-        double x;
-        double y;
+
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 return 0;
             }else if(event.type == SDL_MOUSEBUTTONDOWN){
                 x = event.button.x;
                 y = event.button.y;
-
-                if(check_box(x, y)){
-
-                    int letter_nbr = get_letter(x, y);
-                    int nbr_x = (letter_nbr > 4) ? letter_nbr - 5: letter_nbr;
-                    int nbr_y = (letter_nbr > 4) ? 1 : 0;
-
-                    SDL_Texture* letter_texture = load_and_crop_image("C:/Users/htrik/Downloads/level2/assets/letters.png", nbr_x*84, nbr_y*84, 84, 84);
-
-                    if(decode[letter_box] != 0){
-                        letter_box = find_empty_box(letter_box);
-                    }
-
-                    decode[letter_box] = 1;
-
-                    if(check_right_letter(letter_box, letter_nbr)){
-                        decode[letter_box] = 2;
-                    }
-
-                    draw_white_box(letter_texture, 120 + nbr_x*84, 219 + nbr_y*84, 84, 84);
-
-                    draw_texture(letter_texture, letters_x[letter_box], letters_y);
-
-                    SDL_RenderPresent(renderer);
-                    SDL_Delay(200);
-
-                }else if(check_letter_nbr(x, y)){
-
-                    letter_box = get_letter_nbr(x, y, letter_box);
-
-                    if(decode[letter_box] != 0){
-                        draw_texture(empty_box_texture, letters_x[letter_box], letters_y);
-                        //draw_texture();
-                    }
-                }
             }
         }
+
+        SDL_RenderClear(renderer);
+
+        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+        draw_texture(hint1_texture, 0, 0);
+        draw_texture(background_texture, 0, 0);
+        draw_white_box(cropped_letters_texture, 0, 219, SCREEN_WIDTH, SCREEN_HEIGHT - 219);
+
+        letters[0].x = 120;
+        letters[0].y = 219;
+        letters[0].originalX = letters[0].x;
+        letters[0].originalY = letters[0].y;
+        letters[0].letter_texture = load_and_crop_image("assets/letters.png", 0, 0, 84, 84);
+        letters[0].position = -1;
+        draw_texture(letters[0].letter_texture, letters[0].x, letters[0].y);
+
+        for(int i = 1; i < 5; i++){
+            letters[i].x = letters[i-1].x + 84;
+            letters[i].y = letters[i-1].y;
+            letters[i].originalX = letters[i].x;
+            letters[i].originalY = letters[i].y;
+            letters[i].letter_texture = load_and_crop_image("assets/letters.png", i * 84, 0, 84, 84);
+            letters[i].position = -1;
+            draw_texture(letters[i].letter_texture, letters[i].x, letters[i].y);
+        }
+
+        for(int i = 5; i < 10; i++){
+            letters[i].x = letters[i - 5].x;
+            letters[i].y = letters[i - 5].y + 84;
+            letters[i].originalX = letters[i].x;
+            letters[i].originalY = letters[i].y;
+            letters[i].letter_texture = load_and_crop_image("assets/letters.png", (i - 5) * 84, 84, 84, 84);
+            letters[i].position = -1;
+            draw_texture(letters[i].letter_texture, letters[i].x, letters[i].y);
+        }
+
+
+        //Box Filling
+        if(check_box(x, y)){
+
+            int letter_nbr = get_letter(x, y);
+            int nbr_x = (letter_nbr > 4) ? letter_nbr - 5: letter_nbr;
+            int nbr_y = (letter_nbr > 4) ? 1 : 0;
+
+            SDL_Texture* letter_texture = load_and_crop_image("assets/letters.png", nbr_x*84, nbr_y*84, 84, 84);
+
+            if(decode[letter_box] != 0){
+                letter_box = find_empty_box(letter_box);
+
+                printf("Not empty and box: %i \n", letter_box);
+            }
+
+            decode[letter_box] = 1;
+
+            if(check_right_letter(letter_box, letter_nbr)){
+                decode[letter_box] = 2;
+            }
+
+            draw_white_box(letter_texture, 120 + nbr_x*84, 219 + nbr_y*84, 84, 84);
+
+            draw_texture(letter_texture, letters_x[letter_box], letters_y);
+
+
+        }else if(check_letter_nbr(x, y)){
+
+            letter_box = get_letter_nbr(x, y, letter_box);
+
+            if(decode[letter_box] != 0){
+                SDL_Texture* empty_box_texture = load_and_crop_image("assets/level2_background.png", 25.14, 121.2934, 84, 84);
+                draw_texture(empty_box_texture, letters_x[letter_box], letters_y);
+            }
+
+        }
+
+
+        SDL_RenderPresent(renderer);
+
+
+
     }
+
+
+    SDL_DestroyTexture(background_texture);
+    SDL_DestroyTexture(cropped_letters_texture);
+    SDL_DestroyTexture(letters_texture);
+
 
 
     SDL_Color color1 = {255, 68, 51, 0};
 
-    SDL_Surface* surface1 = TTF_RenderText_Solid(font, "LEVEL2 Passed", color1);
+    SDL_Surface* surface1 = TTF_RenderText_Solid(font, "LEVEL 2 Passed", color1);
     SDL_Texture* texture1 = SDL_CreateTextureFromSurface(renderer, surface1);
     SDL_Rect rect1 = {SCREEN_WIDTH / 2 - 80, SCREEN_HEIGHT / 2 - 40, surface1->w, surface1->h};
     SDL_RenderCopy(renderer, texture1, NULL, &rect1);
-    SDL_RenderPresent(renderer);
 
 
     SDL_Delay(1000);
@@ -316,9 +290,7 @@ int main(int argc, char* argv[]) {
 
 
 
-    SDL_DestroyTexture(background_texture);
-    SDL_DestroyTexture(cropped_letters_texture);
-    SDL_DestroyTexture(letters_texture);
+
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 
